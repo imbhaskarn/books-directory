@@ -1,21 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const Book = require("../model/book.model");
+
+// get all data
 router.get("/", (req, res) => {
   Book.find({}, (err, data) => {
     if (err) {
-      throw err;
+      console.log(err.message)
+      return res.json('Internal error')
     }
     if (!data) {
-      res.send("data not found");
+      return res.json("data not found");
     }
-    res.send(data);
+    return res.json(data);
   });
 });
 // create a new document
 router.post("/new", async (req, res) => {
+  console.log(req.body)
   try {
+    console.log(req.body)
     const body = req.body;
+    if (!body) {
+      return res.json("Data cannot be empty");
+    }
     const book = await new Book({
       title: body.title,
       author: body.author,
@@ -24,15 +32,28 @@ router.post("/new", async (req, res) => {
       publication: body.publication,
       pages: body.pages,
     });
-    console.log(`\n ${book}`);
-    if (!body) {
-      res.send("Data cannot be empty");
-    }
     const result = await book.save();
-    res.send(result);
+    console.log(result)
+    return res.json(result);
   } catch (e) {
     console.log(e);
-    res.send("Got Some error \n" + e);
+    return res.json("internal error!");
+  }
+});
+// find a document with an id
+router.get("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await Book.findById({
+      _id: id,
+    });
+    if (!result) {
+      return res.status(404).json(`Document not found with id: ${id}.`);
+    }
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.json("Internal Error");
   }
 });
 
@@ -48,59 +69,34 @@ router.put("/update/:id", async (req, res) => {
       publication: body.publication,
       pages: body.pages,
     };
-    const updated = {
-      new: true
-    };
-    if (Object.keys(req.body).length === 0) {
-      res.send("Empty Object");
-    } else {
-      const result = await Book.findByIdAndUpdate(
-        req.params.id,
-        update,
-        updated
-      );
-
-      if (!result) {
-        res.status(404);
-        res.send("Document does not exist");
-      } else {
-        res.send(result);
-        console.log(result);
-      }
-    }
-  } catch (e) {
-    console.log(e);
-    res.send("Document not updated");
-  }
-});
-
-// find a document with an id
-router.get("/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const result = await Book.findById({
-      _id: id,
-    });
+    const result = await Book.findByIdAndUpdate(
+      req.params.id,
+      update, {
+        new: true
+      })
     if (!result) {
-      res.send(`Document not found with id: ${id}.`);
+      return res.status(404).json(`No books found with id:${req.params.id}`);
     }
     res.json(result);
+    console.log(result);
+
   } catch (e) {
     console.log(e);
-    res.send("got an erorr");
+    return res.json("Document not updated");
   }
 });
+
+
 
 //delete a document with an id
 router.delete("/delete/:id", async (req, res) => {
   try {
     console.log(req.params.id);
-    const result = await Book.findByIdAndRemove(req.params.id);
-    console.log(result);
-    res.send(result);
+    const result = await Book.findByIdAndRemove(req.params.id)
+    res.json(result);
   } catch (e) {
     console.log(e);
-    res.send("Got an error");
+    res.json("Got an error");
   }
 });
 

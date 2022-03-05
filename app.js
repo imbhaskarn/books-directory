@@ -23,6 +23,10 @@ mongoose.connect(process.env.URI, (err) => {
     throw err;
   }
 });
+app.use(function(req, res, next) {
+  res.setHeader("Content-Type", "application/json");
+  next();
+});
 
 app.listen(process.env.PORT, () => {
   console.log("server listening...");

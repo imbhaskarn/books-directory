@@ -2,8 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Book = require("../model/book.model");
 
+router.get('/', (req, res) => {
+res.json({
+  message:'API Ready!'
+})
+})
+
 // get all data
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const result = await Book.find({});
     if (!data) {

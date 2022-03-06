@@ -3,18 +3,25 @@ const router = express.Router();
 const Book = require("../model/book.model");
 
 // get all data
-router.get("/", (req, res) => {
-  Book.find({}, (err, data) => {
-    if (err) {
-      console.log(err.message)
-      return res.json('Internal error')
-    }
+router.get("/", async (req, res) => {
+  try {
+    const result = await Book.find({});
     if (!data) {
-      return res.json("data not found");
+      return res.json({
+        message: "data not found",
+        status: 404
+      });
     }
     return res.json(data);
-  });
-});
+  } catch (err) {
+    console.log(err.message)
+    return res.json({
+      message: "internal error",
+      status: 505
+    })
+  }
+})
+
 // create a new document
 router.post("/new", async (req, res) => {
   console.log(req.body)
@@ -22,7 +29,10 @@ router.post("/new", async (req, res) => {
     console.log(req.body)
     const body = req.body;
     if (!body) {
-      return res.json("Data cannot be empty");
+      return res.json({
+        message: "invalid input",
+
+      });
     }
     const book = await new Book({
       title: body.title,
@@ -37,7 +47,10 @@ router.post("/new", async (req, res) => {
     return res.json(result);
   } catch (e) {
     console.log(e);
-    return res.json("internal error!");
+    return res.json({
+      message: "internal error",
+      status: 505
+    });
   }
 });
 // find a document with an id
@@ -53,7 +66,10 @@ router.get("/:id", async (req, res) => {
     return res.json(result);
   } catch (e) {
     console.log(e);
-    res.json("Internal Error");
+    res.json({
+      message: "internal error",
+      status: 505
+    });
   }
 });
 
@@ -75,28 +91,49 @@ router.put("/update/:id", async (req, res) => {
         new: true
       })
     if (!result) {
-      return res.status(404).json(`No books found with id:${req.params.id}`);
+      return res.json({
+        message: `No books found with id:${req.params.id}`,
+        status: 404
+      });
     }
     res.json(result);
     console.log(result);
 
   } catch (e) {
     console.log(e);
-    return res.json("Document not updated");
+    return res.json({
+      message: "internal error",
+      status: 505
+    });
   }
 });
-
-
 
 //delete a document with an id
 router.delete("/delete/:id", async (req, res) => {
   try {
+    if (req.params.id.length !== 24) {
+      return res.json({
+        message: 'Invalid id'
+      })
+    }
     console.log(req.params.id);
-    const result = await Book.findByIdAndRemove(req.params.id)
-    res.json(result);
+    const result = await Book.findOneAndRemove({
+      _id: req.params.id
+    })
+    if (result == null) {
+      return res.json({
+        message: 'Invalid Id'
+      })
+    }
   } catch (e) {
-    console.log(e);
-    res.json("Got an error");
+    if (e.kind === 'ObjectId') {
+      res.json({
+        message: 'Invalid Id'
+      })
+    }
+    res.json({
+      message: "Internal Error"
+    });
   }
 });
 

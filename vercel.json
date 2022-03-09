@@ -14,8 +14,8 @@
     ],
     "build": {
         "env": {
-            "URI": "mongodb+srv://admin:admin3355@cluster-01.u7lih.mongodb.net/books-collection?retryWrites=true&w=majority",
-            "PORT": 4000
+            "URI": "",
+            "PORT": "4000"
         }
     }
 }

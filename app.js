@@ -11,7 +11,7 @@ app.use(
     extended: true,
   })
 );
-const api = require("./api/api.routes");
+const api = require("./api/books");
 app.use("/api/books", api);
 mongoose.connect(process.env.URI, (err) => {
   if (!err) {
@@ -24,6 +24,6 @@ app.use(function (req, res, next) {
   res.setHeader("Content-Type", "application/json");
   next();
 });
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 4000, () => {
   console.log("Api ready!");
 });
